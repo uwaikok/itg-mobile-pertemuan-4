@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/stat_chip.dart';
-import '../widgets/quest_tile.dart';
+import '../widgets/quest_widget.dart';
 
 class LayoutQuestPage extends StatefulWidget {
   const LayoutQuestPage({super.key});
@@ -15,10 +15,13 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
   int mp = 120;
   int gold = 140;
 
-  final quests = const [
-    ('Kalahkan 3 Goblin', 'Reward: +20 gold'),
-    ('Ambil 2 Potion', 'Reward: +10 MP'),
-    ('Latihan di arena', 'Reward: +10 HP'),
+  // Struktur data quest yang dinamis (List of Map)
+  final List<Map<String, String>> quests = [
+    {'title': 'Kalahkan 3 Goblin', 'reward': 'Reward: +20 gold'},
+    {'title': 'Ambil 2 Potion', 'reward': 'Reward: +10 MP'},
+    {'title': 'Latihan di arena', 'reward': 'Reward: +10 HP'},
+    {'title': 'Bicara dengan NPC', 'reward': 'Reward: +5 HP'},
+    {'title': 'Beli senjata baru', 'reward': 'Reward: +15 gold'},
   ];
 
   void startQuest() {
@@ -32,6 +35,7 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
       const SnackBar(content: Text('Quest started!')),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -46,14 +50,14 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _HeaderCard(
+            // Header kembali menjadi internal widget
+            const _HeaderCard(
               name: 'Rani',
               role: 'Mage Apprentice',
               badgeText: 'LEVEL 3',
             ),
             const SizedBox(height: 12),
 
-            // WRAP: bagus untuk item yang bisa pindah baris di layar sempit
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -69,17 +73,16 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
             Text('Today\'s Quests', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
 
-            // Expanded: biar list mengisi sisa ruang dan tidak overflow
             Expanded(
               child: ListView.separated(
                 itemCount: quests.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
-                  final (title, subtitle) = quests[i];
-                  return QuestTile(
-                    title: title,
-                    subtitle: subtitle,
-                    onTap: () => setState(() => log = '📌 Dipilih: $title'),
+                  final quest = quests[i];
+                  return QuestWidget(
+                    title: quest['title'] ?? '',
+                    subtitle: quest['reward'] ?? '',
+                    onTap: () => setState(() => log = '📌 Dipilih: ${quest['title']}'),
                   );
                 },
               ),
@@ -87,7 +90,6 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
 
             const SizedBox(height: 12),
 
-            // Tombol aksi
             ElevatedButton.icon(
               onPressed: startQuest,
               icon: const Icon(Icons.flag),
@@ -99,7 +101,6 @@ class _LayoutQuestPageState extends State<LayoutQuestPage> {
 
             const SizedBox(height: 10),
 
-            // Log output
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -143,14 +144,13 @@ class _HeaderCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // STACK: avatar + badge
           Stack(
             children: [
               CircleAvatar(
                 radius: 28,
                 backgroundColor: cs.primary,
                 child: Text(
-                  name.substring(0, 1).toUpperCase(),
+                  name.isNotEmpty ? name.substring(0, 1).toUpperCase() : '?',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
@@ -172,8 +172,6 @@ class _HeaderCard extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 12),
-
-          // EXPANDED: biar teks mengambil sisa ruang
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +182,6 @@ class _HeaderCard extends StatelessWidget {
               ],
             ),
           ),
-
           Icon(Icons.chevron_right, color: cs.onPrimaryContainer),
         ],
       ),
